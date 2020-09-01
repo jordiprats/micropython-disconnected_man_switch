@@ -1,5 +1,9 @@
 from config import wifi_config
 
+import machine
+
+pin = machine.Pin(22, machine.Pin.OUT, value=0)
+
 import network
 
 sta_if = network.WLAN(network.STA_IF)
@@ -8,20 +12,48 @@ sta_if.scan()
 sta_if.connect(wifi_config['ssid'], wifi_config['password'])
 
 import utime
-print('sleep 10')
-utime.sleep(10)
+print('>> sleep 30 >> waiting for network')
+utime.sleep(30)
 
 import uping
 
-while True:
-    total_recv = 0
-    for i in range(10):
-    (n_trans, n_recv) = uping.ping('8.8.8.8', count=1)
-    total_recv += n_recv
-    utime.sleep(1)
+try:
+    while True:
+        total_recv = 0
+        for i in range(10):
+            (n_trans, n_recv) = uping.ping('1.1.1.1', count=4)
+            total_recv += n_recv
+            utime.sleep(1)
 
-    if total_recv > 0
-        utime.sleep(60)
-        continue
-    else:
-        print('ERROR')
+        if total_recv > 0:
+            print('== PING OK ==')
+            utime.sleep(60)
+            continue
+        else:
+            print('== ERROR 1.1.1.1, RETRY 8.8.8.8 ==')
+            utime.sleep(10)
+            total_recv = 0
+            for i in range(10):
+                (n_trans, n_recv) = uping.ping('8.8.8.8', count=4)
+                total_recv += n_recv
+                utime.sleep(1)
+
+            if total_recv > 0:
+                print('== NOT DEAD ==')
+                utime.sleep(30)
+                continue
+            else:
+                print('## 8.8.8.8 not answering')
+                raise Exception('DEAD')
+except:
+    print('>> DEAD <<')
+
+    # RESET ROUTER
+    print('>> POWER OFF ROUTER <<')
+    pin.on()
+    utime.sleep(10)
+    print('>> POWER ON ROUTER <<')
+    pin.off()
+    
+    utime.sleep(120)
+    machine.reset()
