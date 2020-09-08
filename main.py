@@ -1,5 +1,7 @@
 from config import wifi_config
 
+debug = True
+
 import machine
 
 pin = machine.Pin(22, machine.Pin.OUT, value=0)
@@ -12,7 +14,7 @@ sta_if.scan()
 sta_if.connect(wifi_config['ssid'], wifi_config['password'])
 
 import utime
-print('>> sleep 30 >> waiting for network')
+print('>> sleep 30 >> waiting for network') if debug
 utime.sleep(30)
 
 import uping
@@ -26,11 +28,11 @@ try:
             utime.sleep(1)
 
         if total_recv > 0:
-            print('== PING OK ==')
+            print('== PING OK ==') if debug if debug
             utime.sleep(60)
             continue
         else:
-            print('== ERROR 1.1.1.1, RETRY 8.8.8.8 ==')
+            print('== ERROR 1.1.1.1, RETRY 8.8.8.8 ==') if debug
             utime.sleep(10)
             total_recv = 0
             for i in range(10):
@@ -39,20 +41,20 @@ try:
                 utime.sleep(1)
 
             if total_recv > 0:
-                print('== NOT DEAD ==')
+                print('== NOT DEAD ==') if debug
                 utime.sleep(30)
                 continue
             else:
-                print('## 8.8.8.8 not answering')
+                print('## 8.8.8.8 not answering') if debug
                 raise Exception('DEAD')
 except:
-    print('>> DEAD <<')
+    print('>> DEAD <<') if debug
 
     # RESET ROUTER
-    print('>> POWER OFF ROUTER <<')
+    print('>> POWER OFF ROUTER <<') if debug
     pin.on()
     utime.sleep(10)
-    print('>> POWER ON ROUTER <<')
+    print('>> POWER ON ROUTER <<') if debug
     pin.off()
     
     utime.sleep(120)
